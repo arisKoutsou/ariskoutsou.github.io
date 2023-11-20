@@ -82,12 +82,12 @@ analytics:
 author:
   name             : "Aristotelis Koutsouridis"
   avatar           : "profile.png"
-  bio              : "PhD student at Max Planck Institute for Software Systems"
+  bio              : "Max Planck Institute for Software Systems"
   location         : "Kaiserslautern, Germany"
   employer         :
 #  pubmed           : "https://www.ncbi.nlm.nih.gov/pubmed/?term=john+snow"
 #  googlescholar    : "http://yourfullgooglescholarurl.com"
-  email            : "koutsouridis [|] mpi-sws / [org]"
+  email            : "koutsouridis@mpi-sws.org"
 #  researchgate     :  # example: "https://www.researchgate.net/profile/yourprofile"
   uri              :
   bitbucket        :
@@ -102,7 +102,7 @@ author:
   instagram        :
 # impactstory      : #"https://profiles.impactstory.org/u/xxxx-xxxx-xxxx-xxxx"
   lastfm           :
-  linkedin         :
+  linkedin         : "https://www.linkedin.com/in/aristotelis-koutsouridis-0b9789174"
 #  orcid            : "http://orcid.org/yourorcidurl"
   pinterest        :
   soundcloud       :
