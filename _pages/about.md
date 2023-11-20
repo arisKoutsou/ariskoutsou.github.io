@@ -14,5 +14,5 @@ I am advised by [Viktor Vafeiadis](https://people.mpi-sws.org/~viktor/). My curr
 I have previously worked on fuzz testing and application security solutions.
 
 # Blog posts
-1. (November 2022) [Generating a Tiny Corpus with Greedy Set Cover Minimization](https://www.mayhem.security/blog/efficient-corpus-minimization)
-2. (October 2021) [Automatically Resolve Errors During Analysis with Mayhem](https://www.mayhem.security/blog/automatically-resolve-errors-during-analysis-with-mayhem)
+1. (November 2022) [Automatically Resolve Errors During Analysis with Mayhem](https://www.mayhem.security/blog/automatically-resolve-errors-during-analysis-with-mayhem)
+2. (October 2021) [Generating a Tiny Corpus with Greedy Set Cover Minimization](https://www.mayhem.security/blog/efficient-corpus-minimization) 
