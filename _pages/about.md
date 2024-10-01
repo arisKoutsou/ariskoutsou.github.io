@@ -14,7 +14,7 @@ I have previously worked on fuzz testing and application security solutions.
 
 
 # Publications
-1. (CONCUR'24) [Automating Memory Model Metatheory with Intersections](https://doi.org/10.4230/LIPIcs.CONCUR.2024.33) - _An extension of Kleene Algebra with Tests (KAT) that can be used to reason about memory models and concurrent programs_
+1. (CONCUR'24) [Automating Memory Model Metatheory with Intersections](https://doi.org/10.4230/LIPIcs.CONCUR.2024.33) - _An extension of Kleene Algebra with Tests (KAT) that can be used to reason about memory models and concurrent programs_ ([presentation slides](http://ariskoutsou.github.io/files/slides-concur24.pdf))
 
 # Blog posts
 1. (November 2022) [Automatically Resolve Errors During Analysis with Mayhem](https://www.mayhem.security/blog/automatically-resolve-errors-during-analysis-with-mayhem)
