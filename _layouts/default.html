@@ -18,7 +18,7 @@
     <p>{{ site.title }}</p>
   </footer>
   <script>
-    (function() {
+    (function () {
       var siteUrl = '{{ site.url | default: "" }}';
       var allowedHosts = [window.location.hostname];
       try {
@@ -26,7 +26,7 @@
           var u = new URL(siteUrl);
           if (u.hostname && allowedHosts.indexOf(u.hostname) === -1) allowedHosts.push(u.hostname);
         }
-      } catch (e) {}
+      } catch (e) { }
 
       function isExternalAnchor(a) {
         try {
@@ -46,8 +46,8 @@
         }
       }
 
-      document.addEventListener('DOMContentLoaded', function() {
-        document.querySelectorAll('a[href]').forEach(function(a) {
+      document.addEventListener('DOMContentLoaded', function () {
+        document.querySelectorAll('a[href]').forEach(function (a) {
           if (a.classList.contains('no-external')) return;
           // preserve explicitly set targets
           if (a.hasAttribute('target')) return;
