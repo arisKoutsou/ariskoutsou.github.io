@@ -1,0 +1,183 @@
+<!doctype html>
+<html lang="en">
+
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Aristotelis Koutsouridis</title>
+  <meta name="description" content="Academic website">
+  <link rel="stylesheet" href="/assets/css/main.css">
+</head>
+
+<body>
+  <a class="skip-link" href="#content">Skip to content</a>
+  <main id="content" class="wrap">
+    <div class="page-layout">
+  <aside class="sidebar">
+    <figure class="profile-card">
+      <img src="/images/profile.png" alt="Portrait of Aristotelis Koutsouridis" />
+    </figure>
+    <div class="sidebar-info">
+      <h1>Aristotelis Koutsouridis</h1>
+    </div>
+    <ul class="profile-meta" aria-label="Profile information">
+      <li class="meta-item institute"><span class="meta-icon" aria-hidden="true">🏛️</span>
+        
+          MPI-SWS
+        
+      </li>
+      <li class="meta-item location"><span class="meta-icon" aria-hidden="true">📍</span>Kaiserslautern, Germany</li>
+      <li class="meta-item email"><span class="meta-icon" aria-hidden="true">✉️</span><a href="mailto:koutsouridis@mpi-sws.org" title="Email">email</a></li>
+      
+        <li class="meta-item github"><img class="meta-icon meta-icon-image" src="/assets/icons/github-invertocat-black-clearspace.svg" alt="" aria-hidden="true" /><a href="https://github.com/ariskoutsou">GitHub</a></li>
+      
+      
+        <li class="meta-item linkedin"><img class="meta-icon meta-icon-image" src="/assets/icons/linkedin-inbug-black.png" alt="" aria-hidden="true" /><a href="https://www.linkedin.com/in/aristotelis-koutsouridis/">LinkedIn</a></li>
+      
+    </ul>
+  </aside>
+
+  <main class="main-content">
+    <section class="panel" id="bio">
+      
+
+      <p>I am a PhD student working with Prof. <a href="https://people.mpi-sws.org/~viktor/">Viktor Vafeiadis</a> at the <a href="https://www.mpi-sws.org/">Max Planck Institute for Software Systems (MPI-SWS)</a>. I am interested in the area of programming languages and software verification. My current research focuses on automated verification of concurrent programs under weak memory-consistency models. I have previously worked on fuzz testing and application security solutions.</p>
+
+    </section>
+
+    <section class="panel" id="publications">
+      <h2>Publications</h2>
+      <div class="card-list">
+        
+          <article class="list-card">
+            <p class="meta">2024 · CONCUR</p>
+            
+            
+            
+            
+              <h3>
+                <a href="https://doi.org/10.4230/LIPIcs.CONCUR.2024.33">Automating Memory Model Metatheory with Intersections</a>
+                &nbsp;[<a href="https://ariskoutsou.github.io/files/slides-concur24.pdf" target="_blank" rel="noopener noreferrer">slides</a>]
+              </h3>
+            
+            <p>Aristotelis Koutsouridis, Michalis Kokologiannakis, Viktor Vafeiadis</p>
+            
+              <p class="inline-links">
+                
+                  
+                
+                  
+                
+              </p>
+            
+          </article>
+        
+      </div>
+    </section>
+
+    <section class="panel" id="teaching">
+      <h2>Teaching assistant</h2>
+      <div class="card-list">
+        
+          <article class="list-card">
+            <p class="meta">Winter semester 2025</p>
+            <h3>
+              
+                <a href="https://modhb.rptu.de/mhb/modules/INF-56-52-M-5/">Advanced Automata Theory</a>
+              
+              
+                with
+                
+                  <a href="https://people.mpi-sws.org/~mganardi/">Prof. Moses Ganardi</a>
+                
+                at
+                
+                  <a href="https://cs.rptu.de/en/">RPTU</a>
+                
+              
+            </h3>
+            <p>Organized and gave weekly tutorial lectures</p>
+          </article>
+        
+      </div>
+    </section>
+
+    <section class="panel" id="blogposts">
+      <h2>Blog posts</h2>
+      <div class="card-list">
+        
+          <article class="list-card ">
+            <p class="meta">May 2026</p>
+            <h3><a href="/blog/developing-a-verification-tool-based-on-separation-logic/">Developing an automated verification tool based on separation logic</a></h3>
+            <p></p>
+          </article>
+        
+          <article class="list-card external">
+            <p class="meta">November 2022</p>
+            <h3><a href="https://securityboulevard.com/2022/11/automatically-resolve-errors-during-analysis-with-mayhem/">Automatically Resolve Errors During Analysis with Mayhem</a></h3>
+            <p></p>
+          </article>
+        
+          <article class="list-card external">
+            <p class="meta">October 2021</p>
+            <h3><a href="https://securityboulevard.com/2021/10/generating-a-tiny-corpus-with-greedy-set-cover-minimization/">Generating a Tiny Corpus with Greedy Set Cover Minimization</a></h3>
+            <p></p>
+          </article>
+        
+      </div>
+    </section>
+  </main>
+</div>
+
+  </main>
+  <footer class="site-footer wrap">
+    <p>Aristotelis Koutsouridis</p>
+  </footer>
+  <script>
+    (function() {
+      var siteUrl = 'http://localhost:4000';
+      var allowedHosts = [window.location.hostname];
+      try {
+        if (siteUrl) {
+          var u = new URL(siteUrl);
+          if (u.hostname && allowedHosts.indexOf(u.hostname) === -1) allowedHosts.push(u.hostname);
+        }
+      } catch (e) {}
+
+      function isExternalAnchor(a) {
+        try {
+          if (!a || !a.href) return false;
+          // Skip anchors that are fragments or javascript: or mailto/tel
+          var href = a.getAttribute('href');
+          if (!href) return false;
+          if (href.indexOf('#') === 0) return false;
+          if (href.indexOf('javascript:') === 0) return false;
+          if (href.indexOf('mailto:') === 0) return false;
+          if (href.indexOf('tel:') === 0) return false;
+          var url = new URL(a.href, window.location.href);
+          if (url.protocol !== 'http:' && url.protocol !== 'https:') return false;
+          return allowedHosts.indexOf(url.hostname) === -1;
+        } catch (e) {
+          return false;
+        }
+      }
+
+      document.addEventListener('DOMContentLoaded', function() {
+        document.querySelectorAll('a[href]').forEach(function(a) {
+          if (a.classList.contains('no-external')) return;
+          // preserve explicitly set targets
+          if (a.hasAttribute('target')) return;
+          if (isExternalAnchor(a)) {
+            a.setAttribute('target', '_blank');
+            var rel = (a.getAttribute('rel') || '');
+            if (rel.indexOf('noopener') === -1) rel += ' noopener';
+            if (rel.indexOf('noreferrer') === -1) rel += ' noreferrer';
+            a.setAttribute('rel', rel.trim());
+          }
+        });
+      });
+    })();
+  </script>
+</body>
+
+</html>

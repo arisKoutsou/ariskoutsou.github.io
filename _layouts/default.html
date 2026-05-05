@@ -1,31 +1,67 @@
----
-layout: compress
----
-
-{% include base_path %}
-
 <!doctype html>
-<html lang="{{ site.locale | slice: 0,2 }}" class="no-js">
-  <head>
-    {% include head.html %}
-    {% include head/custom.html %}
-  </head>
+<html lang="en">
 
-  <body>
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>{% if page.title and page.title != 'Home' %}{{ page.title }} | {% endif %}{{ site.title }}</title>
+  <meta name="description" content="{{ site.description }}">
+  <link rel="stylesheet" href="{{ '/assets/css/main.css' | relative_url }}">
+</head>
 
-    {% include browser-upgrade.html %}
-    {% include masthead.html %}
-
+<body>
+  <a class="skip-link" href="#content">Skip to content</a>
+  <main id="content" class="wrap">
     {{ content }}
+  </main>
+  <footer class="site-footer wrap">
+    <p>{{ site.title }}</p>
+  </footer>
+  <script>
+    (function() {
+      var siteUrl = '{{ site.url | default: "" }}';
+      var allowedHosts = [window.location.hostname];
+      try {
+        if (siteUrl) {
+          var u = new URL(siteUrl);
+          if (u.hostname && allowedHosts.indexOf(u.hostname) === -1) allowedHosts.push(u.hostname);
+        }
+      } catch (e) {}
 
-    <div class="page__footer">
-      <footer>
-        {% include footer/custom.html %}
-        {% include footer.html %}
-      </footer>
-    </div>
+      function isExternalAnchor(a) {
+        try {
+          if (!a || !a.href) return false;
+          // Skip anchors that are fragments or javascript: or mailto/tel
+          var href = a.getAttribute('href');
+          if (!href) return false;
+          if (href.indexOf('#') === 0) return false;
+          if (href.indexOf('javascript:') === 0) return false;
+          if (href.indexOf('mailto:') === 0) return false;
+          if (href.indexOf('tel:') === 0) return false;
+          var url = new URL(a.href, window.location.href);
+          if (url.protocol !== 'http:' && url.protocol !== 'https:') return false;
+          return allowedHosts.indexOf(url.hostname) === -1;
+        } catch (e) {
+          return false;
+        }
+      }
 
-    {% include scripts.html %}
+      document.addEventListener('DOMContentLoaded', function() {
+        document.querySelectorAll('a[href]').forEach(function(a) {
+          if (a.classList.contains('no-external')) return;
+          // preserve explicitly set targets
+          if (a.hasAttribute('target')) return;
+          if (isExternalAnchor(a)) {
+            a.setAttribute('target', '_blank');
+            var rel = (a.getAttribute('rel') || '');
+            if (rel.indexOf('noopener') === -1) rel += ' noopener';
+            if (rel.indexOf('noreferrer') === -1) rel += ' noreferrer';
+            a.setAttribute('rel', rel.trim());
+          }
+        });
+      });
+    })();
+  </script>
+</body>
 
-  </body>
 </html>

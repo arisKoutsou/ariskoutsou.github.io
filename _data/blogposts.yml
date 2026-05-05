@@ -1,0 +1,15 @@
+- date: 2026-05-05
+  title: "Developing an automated verification tool based on separation logic"
+  type: internal
+  url: /blog/developing-a-verification-tool-based-on-separation-logic/
+
+
+- date: 2022-11-01
+  title: Automatically Resolve Errors During Analysis with Mayhem
+  type: external
+  url: https://securityboulevard.com/2022/11/automatically-resolve-errors-during-analysis-with-mayhem/
+
+- date: 2021-10-01
+  title: Generating a Tiny Corpus with Greedy Set Cover Minimization
+  type: external
+  url: https://securityboulevard.com/2021/10/generating-a-tiny-corpus-with-greedy-set-cover-minimization/

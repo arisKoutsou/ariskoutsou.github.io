@@ -1,0 +1,188 @@
+---
+layout: post
+title: "Developing a verification tool based on separation logic"
+date: 2026-05-05
+permalink: /blog/developing-a-verification-tool-based-on-separation-logic/
+summary: "A walkthrough of building a verification tool using separation logic with symbolic execution and a prover module."
+---
+
+Software verification tools enable developers and engineers to automatically check that critical software components of a system behave as intended. Unintended behavior can arise because of invalid memory accesses or incorrect implementations of abstract algorithms. For example, a program that dereferences a null pointer or accesses memory that has already been deallocated may crash or exhibit undefined behavior. We often say that such a program is not memory-safe. Another example where unintended behavior can arise is if the implementation of the `pop` method of a stack doesn't always return the element that was inserted last. In that case, we say that the implementation violates functional correctness.
+
+
+There are various techniques that can automatically establish memory safety and functional correctness of programs, but in this blog post I focus on automated Hoare-style reasoning with separation logic. By the end of this blog post, you will understand how verification tools automatically reason about programs by solving separation logic problems. More importantly, you will see how the translation into logic enables an elegant and extensible design for the implementation of the tool. This design organizes the tool into two main modules: a symbolic executor and a separation logic prover. Before looking under the hood of such tools, let's first outline the main ideas of this verification technique.
+
+In automated Hoare-style reasoning with separation logic, the correctness of the program (programs are assumed to be terminating) is formulated by means of Hoare triples {% raw %}$\\{P\\}\\;C\\;\\{Q\\}${% endraw %}. Here, the precondition $P$ and the postcondition $Q$ are separation logic assertions. We restrict assertions to the grammar below, since we will be studying programs manipulating lists ($x,y$ range over locations and $v$ over values).
+
+$$
+A ::= emp \mid x.f \mapsto v \mid ls(x,y) \mid x = y \mid x \neq y \mid A \ast A \mid \exists z.\, A
+$$
+
+Assertions are interpreted over heaps.
+$emp$ is true only for the empty heap.
+$x.f \mapsto v$ holds for the heap with just one memory cell at address $x$ where the contents of field $f$ are $v$.
+$P \ast Q$ holds for a heap that can be split into two disjoint parts satisfying $P$ and $Q$ respectively.
+$ls(x,y)$ is an inductive predicate used to describe singly-linked list segments on the heap.
+The predicate is satisfied either by the empty heap or by a points-to in combination with a heap recursively satisfying a list segment:
+
+$$
+ls(x, y) ::= emp * x = y \ \vee\ \exists n.\,x \mapsto n * ls(n, y)
+$$
+
+The list segment predicate helps express the correctness of programs manipulating linked data structures elegantly. For example, consider the specification (which is equivalent to a Hoare triple) of a method that implements concatenation of two simply-linked lists `x` and `y`. The precondition *requires* that the method is invoked on a heap satisfying two disjoint list segments that start from `x` and `y` respectively and both end on null (`0`). The postcondition *ensures* that after the execution of the method the heap consists of a single null-terminated list segment starting from `x`. For simplicity, we do not require that the resulting list contains exactly those elements that are present in `x` and `y`. Nonetheless, we are able to express memory-safety with the aforementioned specification.
+
+
+
+The main goal of a verification tool based on separation logic is to automatically check whether a given method (such as `list_concat`) satisfies its specification. To achieve this goal, the verification tool performs a symbolic execution that simulates the execution of the method while accumulating separation logic assertions that describe the program state. In order to simulate the execution of primitive statements (e.g. assignments, pointer dereferences), the tool needs to perform reasoning about separation logic assertions. This reasoning is performed by a dedicated prover module. In the following sections, I explore the design of the symbolic execution and prover modules in more detail and I highlight their interaction.
+
+## The symbolic execution module
+
+Symbolic execution resembles normal execution, but instead of concrete values, it operates on symbolic values and assertions. The starting assertion is the precondition of the method. Subsequent assertions are computed by simulating the execution of each primitive statement in the method. For example, consider a part of the symbolic execution for the `list_concat` method:
+
+```c
+{ls(x, 0) * ls(y, 0) * x != 0}
+prev := x;
+{ls(x, 0) * ls(y, 0) * x != 0 * prev = x}
+curr := x.next;
+...
+{ls(x, prev) * prev.next -> y * ls(y, 0)}
+```
+
+Assertions are shown in braces between consecutive statements. After executing the first assignment, the assertion is updated to include the fact that `prev` now holds the same symbolic value as `x`. Eventually, at the end of the method, we obtain an assertion describing a heap that consists of a list segment from `x` to `prev`, linked with a segment from `y` to `0`.
+
+In the execution above, we described the program state using single assertions after each statement. However, in practice, symbolic execution maintains a set of assertions (i.e., a disjunction of assertions) to represent the program state. These sets of assertions are called disjuncts. Maintaining disjuncts is necessary to handle branching statements (e.g., if-else, while) that may lead to multiple possible program states. Formally, this behavior can be captured by a transfer function:
+
+$$f:\; Stmt \rightarrow Disjuncts \rightarrow Disjuncts$$
+
+Given an implementation of the transfer function, we can implement symbolic execution using the visitor pattern. We define a visitor struct that implements visit methods for each type of AST node (e.g., method definition, method call, assignment, if statement, while loop). The visitor struct maintains the current set of disjuncts in a field and updates it by applying the transfer function when visiting statements.
+
+```rust
+struct SE {
+    disjuncts: Vec<Assertion>,
+    // ...
+}
+
+impl Visitor for SE {
+    fn visit_statement(&mut self, stmt: &Stmt) {
+        // Compute new disjuncts after executing stmt
+        let ds = transfer_function(stmt, &self.disjuncts);
+        // Update current disjuncts
+        self.disjuncts = ds;
+    }
+    // Other visit methods...
+}
+```
+
+In the next section, we will see how the symbolic execution module uses the prover module to implement the transfer function for some kinds of statements.
+
+## The prover module
+
+Before going into use cases of the prover module within symbolic execution of statements, let's first explain its simplest use case: checking the validity of the postcondition after symbolic execution finishes. More formally, this is equivalent to checking the following entailment: *assuming a heap satisfies one of the assertions obtained by symbolic execution, does it also satisfy the postcondition?* For example, in the previous section we have seen that after executing the `list_concat` method, we obtain the assertion $ls(x, prev) * prev.next \mapsto y * ls(y, 0)$. To check whether the method satisfies its specification, we need to check the following entailment (which is in fact true):
+
+$$
+ls(x, prev) * prev.next \mapsto y * ls(y, 0) \quad \vdash \quad ls(x, 0)
+$$
+
+Even though the simplest use case of the prover module is entailment checking, it can be extended to support more general reasoning tasks. For example, when symbolic execution encounters a memory lookup (`t := y.f;`) it needs to determine the symbolic value of field `f` at memory location `y`. The problem of determining this value can be encoded as a query to the prover. This query cannot be expressed as a simple entailment check. Instead, we need a more general reasoning task called frame inference.
+
+Formally, frame inference is the following problem:
+
+$$
+\text{given assertions } P \text{ and } Q, \text{ find all assertions } F \text{ such that } P \vdash Q * F
+$$
+
+Intuitively, frame inference asks the question: "What additional sub-heap F (the frame) do we need to add to Q so that it becomes entailed by P?". For example, if $P$ is $x \mapsto v * y \mapsto w$ and $Q$ is $x \mapsto v$, then the frame $F$ that satisfies the frame inference problem is $y \mapsto w$. Observe that entailment is a special case of frame inference where the frame is empty. The tool implements frame inference with a function `infer_frames` that returns a collection of frames or an error value if there is no frame $F$ that satisfies the entailment:
+
+```rust
+fn infer_frames(p: Assertion, q: Assertion) ->
+    Result<Vec<Assertion>> {
+    // Implementation of frame inference algorithm
+}
+```
+
+Frame inference lies at the heart of Hoare-style reasoning with separation logic. In fact, this is where all the automated reasoning relating to the inductive predicates happens. For example, if P is $ls(x, 0)$ and Q is $ls(x, y)$, then the frame F that satisfies the frame inference problem is $ls(y, 0)$, since concatenating the two list segments gives us the original list segment from x to 0.
+
+### Executing memory accesses using the prover module
+
+As we have claimed, we can execute a memory lookup (or similarly a memory write) by invoking the prover module that implements frame inference. When we symbolically execute the statement `t := y.f;` starting from a disjunct $P$, we can formulate a frame inference query where $Q$ is $\exists v'.\, y \mapsto v'$ (i.e. "there exists a value at location $y$") and ask the prover to find $F$ such that
+$$
+P \vdash (\exists v'.\, y \mapsto v') * F.
+$$
+If the prover succeeds it will (a) return a witness for the existential variable (the symbolic value stored at $y$) and (b) return the frame $F$ describing the rest of the heap that is disjoint from $y$.
+
+For example consider the execution below:
+
+```c
+// Initial disjunct P: y -> n * x -> m
+t := y.f;
+
+// Frame-inference query to prover:
+// Find v', F such that P |- (exists v'. y -> v') * F
+// Prover result: v' := n, F := x -> m
+
+// After lookup: t = n * y -> n * x -> m
+```
+
+Reading the contents of memory cells by using frame inference is crucial for the modularity of the verification tool. Even though the previous example could also be handled by an implementation that syntactically searches for the variable `y` in the initial assertion `P` to find its value `v`, this approach would not be able to handle inductive predicates. For example, consider the case where `y` is a list segment, instead of a single memory cell; then the initial disjunct would be `y!=0 * ls(y, 0) * x \mapsto m`. In this case, syntactic search would fail to find the value of `y.next` since it is not explicitly mentioned in the assertion. However, frame inference can still be used to find the value of `y.next` by reasoning about the inductive definition of the list segment predicate. More concretely, the frame inference query would unfold the definition of $ls(y, 0)$:
+
+```c
+// Initial disjunct P: y!=0 * ls(y, 0) * x -> m
+t := y.next;
+
+// Frame-inference query to prover:
+// Find n', F such that P |- (exists n'. y -> n') * F
+// Prover (by unfolding ls): witness n', frame F := ls(n', 0) * x -> m
+
+// After lookup: t = n' * y -> n' * ls(n', 0) * x -> m
+```
+
+### Executing method calls using the prover module
+
+Another important use case of the prover module is executing method calls during symbolic execution. When we symbolically execute a method call, we need to ensure that the precondition of the called method is satisfied by the current program state. This can be achieved by invoking the prover module to perform frame inference.
+
+Suppose we are executing a method call `r := foo(a_1, a_2, ...);` starting from a disjunct $P$. Let the precondition of method `foo` be $Pre_{foo}$ and its postcondition be $Post_{foo}$. We can formulate a frame inference query where $Q$ is $Pre_{foo}[a_1/x_1, a_2/x_2, ...]$ (i.e., the precondition of `foo` with actual arguments substituted for formal parameters) and ask the prover to find $F$ such that
+$$
+P \vdash Q * F.
+$$
+If the prover succeeds, it will return the frame $F$ describing the rest of the heap that is disjoint from the resources required by the precondition of `foo`. Then, we can compute the new disjunct after the method call as $Post_{foo}[a_1/x_1, a_2/x_2, ...] * F$ (i.e., the postcondition of `foo` with actual arguments substituted for formal parameters, combined with the frame $F$).
+
+For example, consider the execution below:
+
+```c
+// Initial disjunct P: z -> 0 * ls(x, 0) * ls(y, 0) * x != 0
+r := list_concat(x, y);
+// Frame-inference query to prover:
+// Find F such that P |- ls(x, 0) * ls(y, 0) * x != 0 * F
+// Prover result: F := z -> 0
+// After method call: ls(x, 0) * x != 0 * z -> 0
+```
+
+The actual part of the heap that `list_concat` manipulates is described by its precondition. The rest of the heap (in this case, just the memory cell at `z`) remains unchanged after the method call and is captured by the frame `F`.
+
+## Combining the modules to verify `list_concat`
+
+By combining the symbolic execution and prover modules, we can verify the correctness of the `list_concat` method with respect to its specification. The symbolic execution module systematically visits each statement in the method, updating the set of disjuncts that represent the program state. Whenever it encounters a memory lookup or mutation it will invoke the prover module to perform frame inference and obtain the necessary symbolic values and frames as we described.
+
+```c
+method list_concat(x, y)
+requires ls(x, 0) * ls(y, 0) * x != 0
+ensures ls(x, 0) {
+    prev := x;
+    {ls(x, 0) * ls(y, 0) * x != 0 * prev = x}
+    curr := x.next;
+    {prev = x * curr = n * x -> n * ls(n,0) * ls(y,0)}
+    while (curr != 0)
+    invariant ls(x, prev) * prev.next -> curr * ls(curr, 0) {
+        prev := curr;
+        curr := curr.next;
+    }
+    {ls(x, prev) * prev.next -> 0 * ls(y, 0)}
+    prev.next := y;
+    {ls(x, prev) * prev.next -> y * ls(y, 0)}
+}
+```
+
+The invariant of the while loop can be computed with techniques such as shape analysis, but this is outside the scope of this blog post. Even though it is out of scope to explain how the invariant is computed, it is important to note that the computation involves heavy use of the prover module to do both frame inference and entailment checking. This observation reinforces our earlier claim that a prover module is a crucial component of a verification tool and that it should be designed to be reusable and independent of the rest of the system.
+
+## Conclusion
+
+In this blog post we explored a design of a verification tool comprised of two main modules: a symbolic execution module and a prover module. Such a design enables the developer to extend the tool with new reasoning capabilities by modifying only the prover module. For example, verification of programs that manipulate binary trees or doubly-linked lists often requires reasoning about inductive predicates that are more complex than the `ls` predicate. By extending the prover module to handle these new predicates when doing frame inference, the rest of the system can remain unchanged.

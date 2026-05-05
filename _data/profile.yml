@@ -1,0 +1,9 @@
+name: Aristotelis Koutsouridis
+position: PhD student
+affiliation: MPI-SWS
+location: Kaiserslautern, Germany
+long_bio: I am a PhD student working with Prof. [Viktor Vafeiadis](https://people.mpi-sws.org/~viktor/) at the [Max Planck Institute for Software Systems (MPI-SWS)](https://www.mpi-sws.org/). I am interested in the area of programming languages and software verification. My current research focuses on automated verification of concurrent programs under weak memory-consistency models. I have previously worked on fuzz testing and application security solutions.
+email: koutsouridis@mpi-sws.org
+github: https://github.com/ariskoutsou
+linkedin: https://www.linkedin.com/in/aristotelis-koutsouridis/
+photo: /images/profile.png

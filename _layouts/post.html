@@ -1,0 +1,31 @@
+---
+layout: default
+---
+
+<article class="post">
+  <header class="post-header">
+    <p class="eyebrow">Blog post</p>
+    <h1>{{ page.title }}</h1>
+    {% if page.date %}
+    <p class="meta">{{ page.date | date: "%B %-d, %Y" }}</p>
+    {% endif %}
+    <p class="post-actions"><a class="home-button" href="{{ '/' | relative_url }}">← Home</a></p>
+  </header>
+
+  <div class="prose">
+    {{ content }}
+  </div>
+</article>
+
+<script>
+  window.MathJax = {
+    tex: {
+      inlineMath: [['$', '$'], ['\\(', '\\)']],
+      displayMath: [['$$', '$$'], ['\\[', '\\]']]
+    },
+    options: {
+      skipHtmlTags: ['script', 'noscript', 'style', 'textarea', 'pre', 'code']
+    }
+  };
+</script>
+<script defer src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"></script>

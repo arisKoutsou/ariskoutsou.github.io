@@ -1,0 +1,11 @@
+
+
+- year: 2024
+  venue: CONCUR
+  title: Automating Memory Model Metatheory with Intersections
+  authors: Aristotelis Koutsouridis, Michalis Kokologiannakis, Viktor Vafeiadis
+  links:
+    - label: DOI
+      url: https://doi.org/10.4230/LIPIcs.CONCUR.2024.33
+    - label: Slides
+      url: https://ariskoutsou.github.io/files/slides-concur24.pdf
